@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý Database - JDownloader 2 LinkGrabber</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar / Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="../icons/icon48.png" alt="Logo" class="logo">
+        <div>
+          <h2>JDownloader 2</h2>
+          <p>LinkGrabber Manager</p>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <a href="#section-overview" class="nav-item active" data-target="section-overview">📊 Tổng quan</a>
+        <a href="#section-search" class="nav-item" data-target="section-search">🔍 Tra cứu Database</a>
+        <a href="#section-custom" class="nav-item" data-target="section-custom">⭐ Danh sách tùy chỉnh</a>
+        <a href="#section-settings" class="nav-item" data-target="section-settings">⚙️ Cài đặt chung</a>
+      </nav>
+
+      <div class="connection-box">
+        <div class="conn-title">Trạng thái JDownloader 2</div>
+        <div id="jd-status-badge" class="status-indicator offline">
+          <span class="dot"></span>
+          <span id="jd-status-text">Đang kiểm tra...</span>
+        </div>
+        <button id="btn-recheck-jd" class="btn btn-sm btn-outline">Kiểm tra lại 🔄</button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="content">
+      <!-- Section 1: Overview -->
+      <section id="section-overview" class="tab-section active">
+        <h1 class="page-title">Tổng quan hệ thống</h1>
+        <p class="page-desc">Thông tin các đường dẫn file-hoster và decrypter được JDownloader 2 hỗ trợ.</p>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-icon">🌐</span>
+            <div class="stat-value" id="stat-total-domains">8,613</div>
+            <div class="stat-label">Tổng số domain hỗ trợ</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">🔓</span>
+            <div class="stat-value" id="stat-decrypters">1,069+</div>
+            <div class="stat-label">Decrypter Shortlinks</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">📦</span>
+            <div class="stat-value" id="stat-hosters">3,535+</div>
+            <div class="stat-label">File-Hoster Plugins</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">⭐</span>
+            <div class="stat-value" id="stat-custom-domains">0</div>
+            <div class="stat-label">Domain do bạn thêm</div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>💡 Cơ chế hoạt động</h3>
+          <ul>
+            <li><strong>Decrypters (Shortlinks trung gian):</strong> Tự động phát hiện các liên kết giải mã qua nhiều bước và chuyển cho JDownloader 2 LinkGrabber crawl đường dẫn tải file cuối cùng.</li>
+            <li><strong>File-Hosters (Lưu trữ / Chia sẻ):</strong> Bắt link từ các dịch vụ lưu trữ đám mây (Mega.nz, Fshare.vn, Rapidgator, 1fichier, Google Drive, v.v.).</li>
+            <li><strong>Bổ sung dễ dàng:</strong> Khi gặp trang web chưa có trong danh sách, chỉ cần nhấn chuột phải hoặc mở extension và bấm <em>"Thêm vào Database"</em>.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Section 2: Search Database -->
+      <section id="section-search" class="tab-section">
+        <h1 class="page-title">Tra cứu danh sách hỗ trợ</h1>
+        <p class="page-desc">Tìm kiếm trong hơn 8,600 domains và plugins được hỗ trợ mặc định.</p>
+
+        <div class="search-box">
+          <input type="text" id="db-search-input" placeholder="Nhập tên miền (ví dụ: mega, fshare, rapid, adfly, ouo, 1fichier)..." />
+          <span class="search-hint" id="search-result-count">Hiển thị các domain phổ biến</span>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Tên miền (Domain)</th>
+                <th>Phân loại</th>
+                <th>Tên Plugin JDownloader</th>
+                <th>Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody id="search-results-tbody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 3: Custom Domains -->
+      <section id="section-custom" class="tab-section">
+        <h1 class="page-title">Domain do người dùng thêm</h1>
+        <p class="page-desc">Các website bạn đã thêm thủ công hoặc qua nút "Thêm vào Database".</p>
+
+        <div class="add-domain-box">
+          <input type="text" id="input-new-domain" placeholder="Nhập domain mới (ví dụ: mycustomshare.com)..." />
+          <button id="btn-add-custom-domain" class="btn btn-primary">➕ Thêm vào Database</button>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Domain</th>
+                <th>Ngày thêm</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="custom-domains-tbody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 4: Settings -->
+      <section id="section-settings" class="tab-section">
+        <h1 class="page-title">Cài đặt chung</h1>
+        <p class="page-desc">Tùy chỉnh cấu hình kết nối JDownloader 2 và hành vi tự động bắt link.</p>
+
+        <div class="settings-form">
+          <div class="setting-item">
+            <div class="setting-label-col">
+              <label for="setting-port">Cổng kết nối JDownloader 2</label>
+              <span class="setting-desc">Mặc định là 9666 (FlashGot / Click'n'Load)</span>
+            </div>
+            <input type="number" id="setting-port" value="9666" class="form-input" style="width: 120px;" />
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label-col">
+              <label for="setting-template">Mẫu tên gói (Package Name)</label>
+              <span class="setting-desc">Sử dụng {domain} và {date} để tạo tên gói trong LinkGrabber</span>
+            </div>
+            <input type="text" id="setting-template" value="WebGrab_{domain}" class="form-input" />
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label-col">
+              <label for="setting-autograb">Tự động bắt link (Auto-Grab)</label>
+              <span class="setting-desc">Tự động gửi link vào LinkGrabber khi bạn truy cập website hỗ trợ</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="setting-autograb" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label-col">
+              <label for="setting-intercept">Chặn Chrome tải xuống (Download Interception)</label>
+              <span class="setting-desc">Chuyển hướng toàn bộ lượt tải từ trình duyệt vào JDownloader 2 LinkGrabber</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="setting-intercept" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label-col">
+              <label for="setting-fallback">Dự phòng khi JD2 chưa bật (Fallback)</label>
+              <span class="setting-desc">Cho phép Chrome tiếp tục tải bình thường nếu JDownloader 2 đang tắt</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="setting-fallback" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label-col">
+              <label for="setting-notify">Hiển thị thông báo</label>
+              <span class="setting-desc">Bật thông báo trên màn hình mỗi khi bắt link hoặc chuyển file thành công</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="setting-notify" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div style="margin-top: 10px;">
+            <button id="btn-save-settings" class="btn btn-primary">Lưu cài đặt</button>
+            <span id="save-settings-msg" class="save-msg hidden">Đã lưu cài đặt thành công!</span>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

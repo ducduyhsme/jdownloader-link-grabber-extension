@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JDownloader 2 LinkGrabber</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo-group">
+        <img src="../icons/icon32.png" alt="JD Logo" class="logo">
+        <div>
+          <h1 class="title">JDownloader 2</h1>
+          <p class="subtitle">LinkGrabber Autodetect</p>
+        </div>
+      </div>
+      <div id="connection-status" class="status-badge checking">
+        <span class="status-dot"></span>
+        <span class="status-text">Đang kiểm tra...</span>
+      </div>
+    </header>
+
+    <!-- Main Content: Current Page Info -->
+    <main class="main-content">
+      <div class="site-card">
+        <div class="site-header">
+          <span class="label">Trang hiện tại</span>
+          <span id="site-badge" class="badge unknown">Kiểm tra...</span>
+        </div>
+        <div id="current-domain" class="domain-text" title="Domain">example.com</div>
+        <div id="plugin-info" class="plugin-info">Plugin: -</div>
+
+        <!-- Action Button (Dynamic: Add to DB or Grab Again) -->
+        <div class="action-section">
+          <button id="btn-primary-action" class="btn btn-primary">
+            <span class="btn-icon">⚡</span>
+            <span id="btn-action-text">Đang tải...</span>
+          </button>
+          
+          <button id="btn-remove-custom" class="btn btn-danger hidden">
+            <span>🗑️ Xóa khỏi Database tùy chỉnh</span>
+          </button>
+        </div>
+
+        <div id="action-message" class="action-message hidden"></div>
+      </div>
+
+      <!-- Quick Controls -->
+      <div class="controls-card">
+        <div class="control-row">
+          <div class="control-info">
+            <span class="control-label">⚡ Tự động bắt link (Auto-Grab)</span>
+            <span class="control-desc">Tự đẩy vào LinkGrabber khi vào website hỗ trợ</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggle-autograb" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="control-row">
+          <div class="control-info">
+            <span class="control-label">🛑 Chặn Chrome tải file (Download Intercept)</span>
+            <span class="control-desc">Chuyển mọi lượt tải từ Chrome sang JDownloader 2</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggle-intercept" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="control-row">
+          <div class="control-info">
+            <span class="control-label">🔔 Thông báo khi bắt link</span>
+            <span class="control-desc">Hiển thị thông báo trên màn hình</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggle-notify" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer Stats & Links -->
+    <footer class="footer">
+      <div class="stats">
+        <span>Cơ sở dữ liệu: <strong id="total-domains">-</strong> domains</span>
+      </div>
+      <button id="btn-open-options" class="btn-link">Quản lý Database ⚙️</button>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
