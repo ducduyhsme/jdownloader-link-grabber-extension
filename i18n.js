@@ -112,7 +112,13 @@ export const MESSAGES = {
     notif_download_error: 'Failed to send file to JDownloader: {error}',
     notif_jd_offline_title: 'JDownloader 2 Offline',
     notif_jd_offline_message: 'JDownloader 2 is not running. Chrome will proceed with downloading normally.',
-    notif_domain_added: 'Added {domain} to Database!'
+    notif_domain_added: 'Added {domain} to Database!',
+
+    // Video Player Overlay Button
+    btn_video_download: 'Download with JD2',
+    btn_video_download_tooltip: 'Send this video to JDownloader 2 LinkGrabber',
+    btn_video_downloading: 'Sending...',
+    btn_video_grabbed: 'Sent to JD2! ✓'
   },
   vi: {
     // Navigation & Brand
@@ -220,7 +226,13 @@ export const MESSAGES = {
     notif_download_error: 'Không thể chuyển file sang JDownloader: {error}',
     notif_jd_offline_title: 'JDownloader 2 Chưa Mở',
     notif_jd_offline_message: 'JDownloader 2 chưa chạy. Trình duyệt Chrome sẽ tiếp tục tải file.',
-    notif_domain_added: 'Đã thêm {domain} vào Database thành công!'
+    notif_domain_added: 'Đã thêm {domain} vào Database thành công!',
+
+    // Video Player Overlay Button
+    btn_video_download: 'Tải với JD2',
+    btn_video_download_tooltip: 'Gửi video này vào JDownloader 2 LinkGrabber',
+    btn_video_downloading: 'Đang gửi...',
+    btn_video_grabbed: 'Đã gửi JD2! ✓'
   }
 };
 

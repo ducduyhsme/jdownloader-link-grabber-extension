@@ -271,6 +271,39 @@ function isContentOrDownloadUrl(urlStr, matchedDomain) {
 }
 
 /**
+ * Determine if a URL belongs to a social media or video streaming platform
+ * where automatic grabbing should be disabled in favor of manual overlay button.
+ */
+function isVideoOrSocialPlatform(urlStr) {
+  try {
+    const parsed = new URL(urlStr);
+    const hostname = parsed.hostname.toLowerCase();
+    const videoSocialDomains = [
+      'youtube.com',
+      'youtu.be',
+      'facebook.com',
+      'fb.watch',
+      'instagram.com',
+      'tiktok.com',
+      'twitter.com',
+      'x.com',
+      'bilibili.com',
+      'vimeo.com',
+      'dailymotion.com',
+      'twitch.tv',
+      'threads.net',
+      'reddit.com',
+      'douyin.com',
+      'weibo.com',
+      'kuaishou.com'
+    ];
+    return videoSocialDomains.some((d) => hostname === d || hostname.endsWith('.' + d));
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
  * Check if JDownloader 2 is running on localhost.
  * @returns {Promise<boolean>}
  */
@@ -582,13 +615,20 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     return;
   }
 
-  // Filter 4: DO NOT auto-grab pure homepages / feeds / dashboards (e.g. youtube.com, mega.nz homepage)
+  // Filter 4: DO NOT auto-grab pure homepages / feeds / dashboards (e.g. mega.nz homepage)
   if (!isContentOrDownloadUrl(tab.url, match.matchedDomain)) {
     updateBadge(tabId, match, false);
     return;
   }
 
-  // Filter 5: If auto-grab is enabled and URL has not been recently grabbed
+  // Filter 5: For social media and video sharing sites (YouTube, Facebook, TikTok, etc.),
+  // DO NOT auto-grab! Instead, users use the manual overlay Download button on the video player.
+  if (isVideoOrSocialPlatform(tab.url)) {
+    updateBadge(tabId, match, alreadyGrabbed);
+    return;
+  }
+
+  // Filter 6: If auto-grab is enabled and URL has not been recently grabbed
   if (settings.autoGrabEnabled && !alreadyGrabbed) {
     recordGrabbedUrl(tab.url);
     const res = await sendToJDownloader(tab.url, match.matchedDomain);
