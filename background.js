@@ -677,6 +677,7 @@ if (chrome.downloads && chrome.downloads.onDeterminingFilename) {
       let isAlive = true;
       if (settings.fallbackIfJdOffline) {
         isAlive = await checkJdAlive();
+        if (!isAlive) {
           const lang = getLang();
           showNotification(
             t('notif_jd_offline_title', {}, lang),
