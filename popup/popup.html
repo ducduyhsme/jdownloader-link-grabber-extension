@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JDownloader 2 LinkGrabber</title>
+  <title data-i18n="brand_title">JDownloader 2 LinkGrabber</title>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
@@ -13,13 +13,13 @@
       <div class="logo-group">
         <img src="../icons/icon32.png" alt="JD Logo" class="logo">
         <div>
-          <h1 class="title">JDownloader 2</h1>
-          <p class="subtitle">LinkGrabber Autodetect</p>
+          <h1 class="title" data-i18n="brand_title">JDownloader 2</h1>
+          <p class="subtitle" data-i18n="brand_subtitle_popup">LinkGrabber Autodetect</p>
         </div>
       </div>
       <div id="connection-status" class="status-badge checking">
         <span class="status-dot"></span>
-        <span class="status-text">Đang kiểm tra...</span>
+        <span class="status-text" data-i18n="conn_checking">Checking...</span>
       </div>
     </header>
 
@@ -27,8 +27,8 @@
     <main class="main-content">
       <div class="site-card">
         <div class="site-header">
-          <span class="label">Trang hiện tại</span>
-          <span id="site-badge" class="badge unknown">Kiểm tra...</span>
+          <span class="label" data-i18n="popup_current_page">Current Page</span>
+          <span id="site-badge" class="badge unknown" data-i18n="conn_checking">Checking...</span>
         </div>
         <div id="current-domain" class="domain-text" title="Domain">example.com</div>
         <div id="plugin-info" class="plugin-info">Plugin: -</div>
@@ -37,11 +37,11 @@
         <div class="action-section">
           <button id="btn-primary-action" class="btn btn-primary">
             <span class="btn-icon">⚡</span>
-            <span id="btn-action-text">Đang tải...</span>
+            <span id="btn-action-text" data-i18n="conn_checking">Loading...</span>
           </button>
           
           <button id="btn-remove-custom" class="btn btn-danger hidden">
-            <span>🗑️ Xóa khỏi Database tùy chỉnh</span>
+            <span data-i18n="popup_btn_remove_custom">🗑️ Remove from Custom Database</span>
           </button>
         </div>
 
@@ -52,8 +52,8 @@
       <div class="controls-card">
         <div class="control-row">
           <div class="control-info">
-            <span class="control-label">⚡ Tự động bắt link (Auto-Grab)</span>
-            <span class="control-desc">Tự đẩy vào LinkGrabber khi vào website hỗ trợ</span>
+            <span class="control-label" data-i18n="setting_autograb_label">⚡ Auto-Grab Links</span>
+            <span class="control-desc" data-i18n="setting_autograb_desc">Automatically push to LinkGrabber on supported sites</span>
           </div>
           <label class="switch">
             <input type="checkbox" id="toggle-autograb" checked>
@@ -63,8 +63,8 @@
 
         <div class="control-row">
           <div class="control-info">
-            <span class="control-label">🛑 Chặn Chrome tải file (Download Intercept)</span>
-            <span class="control-desc">Chuyển mọi lượt tải từ Chrome sang JDownloader 2</span>
+            <span class="control-label" data-i18n="setting_intercept_label">🛑 Download Interception</span>
+            <span class="control-desc" data-i18n="setting_intercept_desc">Route browser downloads into JDownloader 2</span>
           </div>
           <label class="switch">
             <input type="checkbox" id="toggle-intercept" checked>
@@ -74,8 +74,8 @@
 
         <div class="control-row">
           <div class="control-info">
-            <span class="control-label">🔔 Thông báo khi bắt link</span>
-            <span class="control-desc">Hiển thị thông báo trên màn hình</span>
+            <span class="control-label" data-i18n="setting_notify_label">🔔 Notifications</span>
+            <span class="control-desc" data-i18n="setting_notify_desc">Show desktop notifications when links are captured</span>
           </div>
           <label class="switch">
             <input type="checkbox" id="toggle-notify" checked>
@@ -88,12 +88,12 @@
     <!-- Footer Stats & Links -->
     <footer class="footer">
       <div class="stats">
-        <span>Cơ sở dữ liệu: <strong id="total-domains">-</strong> domains</span>
+        <span id="footer-db-text">Database: <strong id="total-domains">-</strong> domains</span>
       </div>
-      <button id="btn-open-options" class="btn-link">Quản lý Database ⚙️</button>
+      <button id="btn-open-options" class="btn-link" data-i18n="popup_btn_manage_db">Database Manager ⚙️</button>
     </footer>
   </div>
 
-  <script src="popup.js"></script>
+  <script type="module" src="popup.js"></script>
 </body>
 </html>

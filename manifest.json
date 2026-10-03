@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "JDownloader 2 LinkGrabber Autodetect",
   "version": "1.0.0",
-  "description": "Tự động phát hiện các website file-hoster và decrypter được hỗ trợ bởi JDownloader 2 và đẩy liên kết vào LinkGrabber.",
+  "description": "Automatically detects file-hosters and decrypters supported by JDownloader 2, intercepts downloads, and pushes links into LinkGrabber.",
   "permissions": [
     "storage",
     "activeTab",

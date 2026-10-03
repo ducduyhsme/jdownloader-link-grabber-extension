@@ -1,6 +1,9 @@
 /**
  * JDownloader 2 LinkGrabber Popup Logic
+ * Multi-language supported (Default: English 'en', Vietnamese 'vi')
  */
+
+import { t, applyI18n, DEFAULT_LANG } from '../i18n.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const connectionEl = document.getElementById('connection-status');
@@ -20,6 +23,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   let currentTab = null;
   let currentMatch = null;
   let currentDomain = '';
+  let currentLang = DEFAULT_LANG;
+  let currentPort = 9666;
 
   // 1. Get current active tab
   try {
@@ -29,21 +34,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Ignore
   }
 
-  // 2. Load settings
+  // 2. Load settings and language
   chrome.runtime.sendMessage({ action: 'getSettings' }, (response) => {
     if (response && response.settings) {
+      currentLang = response.settings.language || DEFAULT_LANG;
+      currentPort = response.settings.jdPort || 9666;
+      applyI18n(currentLang);
       toggleAutograb.checked = !!response.settings.autoGrabEnabled;
       toggleIntercept.checked = response.settings.interceptDownloads !== false;
       toggleNotify.checked = !!response.settings.notifyOnGrab;
+      refreshStatus();
     }
   });
 
   // 3. Update connection and domain status
   async function refreshStatus() {
     if (!currentTab || !currentTab.url) {
-      currentDomainEl.textContent = 'Không có trang web hợp lệ';
+      currentDomainEl.textContent = t('popup_invalid_tab', {}, currentLang);
       btnPrimaryAction.disabled = true;
-      btnActionText.textContent = 'Không khả dụng';
+      btnActionText.textContent = '-';
       return;
     }
 
@@ -64,15 +73,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentMatch = match;
 
         // Total domains count
-        totalDomainsEl.textContent = `${(totalBuiltin || 0).toLocaleString()} (+${totalCustom || 0} tùy chỉnh)`;
+        totalDomainsEl.textContent = t(
+          'popup_total_domains',
+          {
+            builtin: (totalBuiltin || 0).toLocaleString(),
+            custom: totalCustom || 0
+          },
+          currentLang
+        );
 
         // Connection status
         if (isAlive) {
           connectionEl.className = 'status-badge online';
-          connectionEl.innerHTML = '<span class="status-dot"></span><span>JD2: Online (9666)</span>';
+          connectionEl.innerHTML = `<span class="status-dot"></span><span>${t('popup_status_online', { port: currentPort }, currentLang)}</span>`;
         } else {
           connectionEl.className = 'status-badge offline';
-          connectionEl.innerHTML = '<span class="status-dot"></span><span>JD2: Chưa mở</span>';
+          connectionEl.innerHTML = `<span class="status-dot"></span><span>${t('popup_status_offline', {}, currentLang)}</span>`;
         }
 
         // Domain match status
@@ -81,35 +97,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (match && match.isSupported) {
           if (match.isCustom) {
             siteBadgeEl.className = 'badge custom';
-            siteBadgeEl.textContent = '⭐ Tùy chỉnh';
-            pluginInfoEl.textContent = `Loại: Tùy chỉnh (Đã thêm bởi bạn)`;
+            siteBadgeEl.textContent = t('popup_badge_custom', {}, currentLang);
+            pluginInfoEl.textContent = t('popup_custom_added', {}, currentLang);
             btnRemoveCustom.classList.remove('hidden');
           } else {
             siteBadgeEl.className = 'badge supported';
             const typeStr = (match.types || []).join(' / ') || 'Hoster';
-            siteBadgeEl.textContent = `⚡ Hỗ trợ (${typeStr})`;
-            pluginInfoEl.textContent = `JDownloader Plugin: ${match.plugin || 'Tự động'}`;
+            siteBadgeEl.textContent = t('popup_badge_supported', { types: typeStr }, currentLang);
+            pluginInfoEl.textContent = t('popup_plugin_label', { plugin: match.plugin || 'Auto' }, currentLang);
             btnRemoveCustom.classList.add('hidden');
           }
 
           btnPrimaryAction.className = 'btn btn-primary';
           btnPrimaryAction.querySelector('.btn-icon').textContent = '📥';
-          btnActionText.textContent = 'Gửi lại vào LinkGrabber';
+          btnActionText.textContent = t('popup_btn_grab_again', {}, currentLang);
         } else {
           siteBadgeEl.className = 'badge unsupported';
-          siteBadgeEl.textContent = '❓ Chưa có trong DB';
-          pluginInfoEl.textContent = 'Chưa có trong danh sách hỗ trợ mặc định';
+          siteBadgeEl.textContent = t('popup_badge_unsupported', {}, currentLang);
+          pluginInfoEl.textContent = t('popup_not_in_default', {}, currentLang);
           btnRemoveCustom.classList.add('hidden');
 
           btnPrimaryAction.className = 'btn btn-add-db';
           btnPrimaryAction.querySelector('.btn-icon').textContent = '➕';
-          btnActionText.textContent = 'Thêm trang này vào Database';
+          btnActionText.textContent = t('popup_btn_add_db', {}, currentLang);
         }
       }
     );
   }
-
-  await refreshStatus();
 
   // Helper to show message
   function showMessage(text, isSuccess = true) {
@@ -127,7 +141,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!currentMatch || !currentMatch.isSupported) {
       // Add to database
-      btnActionText.textContent = 'Đang thêm...';
+      btnActionText.textContent = currentLang === 'vi' ? 'Đang thêm...' : 'Adding...';
       chrome.runtime.sendMessage(
         {
           action: 'addDomain',
@@ -140,13 +154,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             showMessage(res.message, true);
             refreshStatus();
           } else {
-            showMessage((res && res.message) || 'Lỗi khi thêm domain', false);
+            showMessage((res && res.message) || 'Error adding domain', false);
           }
         }
       );
     } else {
       // Re-send to LinkGrabber
-      btnActionText.textContent = 'Đang gửi...';
+      btnActionText.textContent = currentLang === 'vi' ? 'Đang gửi...' : 'Sending...';
       chrome.runtime.sendMessage(
         {
           action: 'grabUrl',
@@ -154,11 +168,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         },
         (res) => {
           btnPrimaryAction.disabled = false;
-          btnActionText.textContent = 'Gửi lại vào LinkGrabber';
+          btnActionText.textContent = t('popup_btn_grab_again', {}, currentLang);
           if (res && res.success) {
             showMessage(res.message, true);
           } else {
-            showMessage((res && res.message) || 'Không thể gửi tới JDownloader', false);
+            showMessage((res && res.message) || 'Could not send to JDownloader', false);
           }
         }
       );
@@ -167,7 +181,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 5. Remove Custom Domain Button
   btnRemoveCustom.addEventListener('click', () => {
-    if (!confirm(`Bạn có chắc muốn xóa "${currentDomain}" khỏi database tùy chỉnh?`)) {
+    if (!confirm(t('confirm_delete_domain', { domain: currentDomain }, currentLang))) {
       return;
     }
 
@@ -177,7 +191,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       (res) => {
         btnRemoveCustom.disabled = false;
         if (res && res.success) {
-          showMessage(`Đã xóa ${currentDomain} khỏi database tùy chỉnh.`, true);
+          showMessage(
+            currentLang === 'vi'
+              ? `Đã xóa ${currentDomain} khỏi database tùy chỉnh.`
+              : `Removed ${currentDomain} from custom database.`,
+            true
+          );
           refreshStatus();
         }
       }

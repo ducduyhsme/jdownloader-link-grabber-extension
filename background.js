@@ -4,6 +4,8 @@
  * context menus, and communication with JDownloader 2 local API.
  */
 
+import { t, DEFAULT_LANG } from './i18n.js';
+
 const JD_LOCAL_URL = 'http://127.0.0.1:9666';
 const REFERER_HEADER = 'http://127.0.0.1:9666/flashgot';
 const DEDUPLICATION_TIMEOUT_MS = 60000; // 60 seconds cooldown for same URL
@@ -11,6 +13,7 @@ const DEDUPLICATION_TIMEOUT_MS = 60000; // 60 seconds cooldown for same URL
 let builtinDatabase = null;
 let customDomains = {};
 let settings = {
+  language: 'en', // 'en' (default) or 'vi'
   autoGrabEnabled: true,
   interceptDownloads: true, // Intercept browser downloads and route to JD2
   fallbackIfJdOffline: true, // Allow browser to download if JD2 is not running
@@ -18,6 +21,10 @@ let settings = {
   defaultPackageTemplate: 'WebGrab_{domain}',
   jdPort: 9666
 };
+
+function getLang() {
+  return settings.language || DEFAULT_LANG;
+}
 
 // Startup grace period and tab tracking (prevents auto-grabbing restored session tabs on Chrome boot)
 let isStartupGracePeriod = true;
@@ -176,12 +183,13 @@ function notifyAutoGrabbed(matchedDomain, pluginName) {
     const count = pendingNotifyCount;
     pendingNotifyCount = 0;
 
+    const lang = getLang();
     const message =
       count > 1
-        ? `Đã tự động bắt ${count} liên kết gửi sang JDownloader 2.`
-        : `Đã tự động bắt link từ ${matchedDomain} (${pluginName || 'Hoster/Decrypter'})`;
+        ? t('notif_grab_multi', { count }, lang)
+        : t('notif_grab_single', { domain: matchedDomain, plugin: pluginName || 'Hoster/Decrypter' }, lang);
 
-    showNotification('JDownloader 2 LinkGrabber', message, 4000);
+    showNotification(t('notif_title', {}, lang), message, 4000);
   }, 300);
 }
 
@@ -494,22 +502,24 @@ function updateBadge(tabId, matchInfo, isGrabbed = false) {
  * Setup Context Menus
  */
 function setupContextMenus() {
+  if (!chrome.contextMenus) return;
   chrome.contextMenus.removeAll(() => {
+    const lang = getLang();
     chrome.contextMenus.create({
       id: 'jd-add-current-domain',
-      title: '➕ Thêm trang web này vào JDownloader Database',
+      title: t('menu_add_domain', {}, lang),
       contexts: ['page', 'action']
     });
 
     chrome.contextMenus.create({
       id: 'jd-send-current-page',
-      title: '📥 Gửi trang này tới JDownloader 2 LinkGrabber',
+      title: t('menu_send_page', {}, lang),
       contexts: ['page', 'action']
     });
 
     chrome.contextMenus.create({
       id: 'jd-send-link',
-      title: '📥 Gửi đường link liên kết này tới JDownloader 2',
+      title: t('menu_send_link', {}, lang),
       contexts: ['link']
     });
   });
@@ -667,10 +677,10 @@ if (chrome.downloads && chrome.downloads.onDeterminingFilename) {
       let isAlive = true;
       if (settings.fallbackIfJdOffline) {
         isAlive = await checkJdAlive();
-        if (!isAlive) {
+          const lang = getLang();
           showNotification(
-            'JDownloader 2 Chưa Mở',
-            'JDownloader 2 chưa chạy. Trình duyệt Chrome sẽ tiếp tục tải file.'
+            t('notif_jd_offline_title', {}, lang),
+            t('notif_jd_offline_message', {}, lang)
           );
           suggest(); // Let Chrome proceed with normal download
           return;
@@ -703,11 +713,12 @@ if (chrome.downloads && chrome.downloads.onDeterminingFilename) {
 
       // 8. Notification
       if (settings.notifyOnGrab) {
+        const lang = getLang();
         showNotification(
-          'JDownloader 2 LinkGrabber',
+          t('notif_title', {}, lang),
           res.success
-            ? `Đã chuyển file ${filename ? `"${filename}"` : `từ ${domain}`} sang JDownloader 2!`
-            : `Không thể chuyển file sang JDownloader: ${res.message}`
+            ? t('notif_download_success', { filename: filename ? `"${filename}"` : `from ${domain}`, domain }, lang)
+            : t('notif_download_error', { error: res.message }, lang)
         );
       }
     })();
@@ -778,8 +789,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   if (request.action === 'saveSettings') {
+    const prevLang = settings.language;
     settings = { ...settings, ...request.settings };
     chrome.storage.local.set({ settings });
+    if (prevLang !== settings.language) {
+      setupContextMenus();
+    }
     sendResponse({ success: true });
     return false;
   }
@@ -792,7 +807,11 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
       customDomains = changes.customDomains.newValue || {};
     }
     if (changes.settings) {
+      const prevLang = settings.language;
       settings = changes.settings.newValue || settings;
+      if (prevLang !== settings.language) {
+        setupContextMenus();
+      }
     }
   }
 });

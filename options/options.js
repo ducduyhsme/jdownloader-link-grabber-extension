@@ -1,6 +1,9 @@
 /**
  * JDownloader 2 LinkGrabber Options & Database Manager Logic
+ * Multi-language supported (Default: English 'en', Vietnamese 'vi')
  */
+
+import { t, applyI18n, DEFAULT_LANG } from '../i18n.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Navigation elements
@@ -29,6 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const customDomainsTbody = document.getElementById('custom-domains-tbody');
 
   // Settings elements
+  const settingLang = document.getElementById('setting-lang');
   const settingPort = document.getElementById('setting-port');
   const settingTemplate = document.getElementById('setting-template');
   const settingAutograb = document.getElementById('setting-autograb');
@@ -41,6 +45,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   let builtinDatabase = null;
   let customDomains = {};
   let domainList = [];
+  let currentLang = DEFAULT_LANG;
+  let lastSearchResults = null;
 
   // --- 1. Tab Navigation ---
   navItems.forEach((item) => {
@@ -60,21 +66,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   // --- 2. Check JDownloader Connection ---
   async function checkConnection() {
     jdStatusBadge.className = 'status-indicator checking';
-    jdStatusText.textContent = 'Đang kiểm tra...';
+    jdStatusText.textContent = t('conn_checking', {}, currentLang);
 
     chrome.runtime.sendMessage({ action: 'pingJDownloader' }, (res) => {
+      const port = settingPort.value || 9666;
       if (res && res.isAlive) {
         jdStatusBadge.className = 'status-indicator online';
-        jdStatusText.textContent = 'Đã kết nối (Cổng 9666)';
+        jdStatusText.textContent = t('conn_online', { port }, currentLang);
       } else {
         jdStatusBadge.className = 'status-indicator offline';
-        jdStatusText.textContent = 'Chưa kết nối JDownloader 2';
+        jdStatusText.textContent = t('conn_offline', {}, currentLang);
       }
     });
   }
 
   btnRecheckJd.addEventListener('click', checkConnection);
-  await checkConnection();
 
   // --- 3. Load Database & Storage ---
   try {
@@ -91,6 +97,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   const storageData = await chrome.storage.local.get(['customDomains', 'settings']);
   customDomains = storageData.customDomains || {};
   const currentSettings = storageData.settings || {};
+
+  // Setup Language
+  currentLang = currentSettings.language || DEFAULT_LANG;
+  if (settingLang) {
+    settingLang.value = currentLang;
+  }
+  applyI18n(currentLang);
+  await checkConnection();
 
   // Fill settings form
   if (currentSettings.jdPort) settingPort.value = currentSettings.jdPort;
@@ -141,10 +155,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   ];
 
   function renderSearchResults(domainsToShow) {
+    lastSearchResults = domainsToShow;
     searchResultsTbody.innerHTML = '';
     if (domainsToShow.length === 0) {
       const tr = document.createElement('tr');
-      tr.innerHTML = '<td colspan="4" style="text-align: center; color: #94a3b8; padding: 24px;">Không tìm thấy domain phù hợp trong cơ sở dữ liệu.</td>';
+      tr.innerHTML = `<td colspan="4" style="text-align: center; color: #94a3b8; padding: 24px;">${t('search_no_results', {}, currentLang)}</td>`;
       searchResultsTbody.appendChild(tr);
       return;
     }
@@ -162,20 +177,25 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Type tags cell
       const tdTypes = document.createElement('td');
       if (isCustom) {
-        tdTypes.innerHTML = '<span class="type-tag custom">⭐ Tùy chỉnh</span>';
+        tdTypes.innerHTML = `<span class="type-tag custom">${t('tag_custom', {}, currentLang)}</span>`;
       } else {
         tdTypes.innerHTML = (info.types || ['hoster'])
-          .map((t) => `<span class="type-tag ${t}">${t === 'decrypter' ? '🔓 Decrypter' : '📦 Hoster'}</span>`)
+          .map((tp) => {
+            const label = tp === 'decrypter' ? t('tag_decrypter', {}, currentLang) : t('tag_hoster', {}, currentLang);
+            return `<span class="type-tag ${tp}">${label}</span>`;
+          })
           .join(' ');
       }
 
       // Plugin cell
       const tdPlugin = document.createElement('td');
-      tdPlugin.textContent = isCustom ? 'Người dùng thêm' : info.plugin || domain;
+      tdPlugin.textContent = isCustom
+        ? (currentLang === 'vi' ? 'Người dùng thêm' : 'User Added')
+        : info.plugin || domain;
 
       // Status cell
       const tdStatus = document.createElement('td');
-      tdStatus.innerHTML = '<span style="color: #4ade80;">✓ Tự động bắt link</span>';
+      tdStatus.innerHTML = `<span style="color: #4ade80;">${t('status_autograb', {}, currentLang)}</span>`;
 
       tr.appendChild(tdDomain);
       tr.appendChild(tdTypes);
@@ -189,7 +209,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initial render with popular domains
   const initialList = popularHighlights.filter((d) => builtinDatabase && builtinDatabase.domains[d]);
   renderSearchResults(initialList);
-  searchResultCount.textContent = `Hiển thị ${initialList.length} domain phổ biến`;
+  searchResultCount.textContent = t('search_popular_hint', { count: initialList.length }, currentLang);
 
   // Search input handler with debounce
   let searchTimeout = null;
@@ -199,7 +219,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const q = dbSearchInput.value.trim().toLowerCase();
       if (!q) {
         renderSearchResults(initialList);
-        searchResultCount.textContent = `Hiển thị ${initialList.length} domain phổ biến`;
+        searchResultCount.textContent = t('search_popular_hint', { count: initialList.length }, currentLang);
         return;
       }
 
@@ -218,7 +238,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       renderSearchResults(matches);
-      searchResultCount.textContent = `Tìm thấy ${matches.length} kết quả (tối đa 100)`;
+      searchResultCount.textContent = t('search_results_hint', { count: matches.length }, currentLang);
     }, 250);
   });
 
@@ -229,7 +249,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (keys.length === 0) {
       const tr = document.createElement('tr');
-      tr.innerHTML = '<td colspan="3" style="text-align: center; color: #94a3b8; padding: 24px;">Chưa có domain tùy chỉnh nào. Bạn có thể thêm bằng ô bên trên hoặc nhấn nút trong menu chuột phải/extension popup.</td>';
+      tr.innerHTML = `<td colspan="3" style="text-align: center; color: #94a3b8; padding: 24px;">${t('custom_empty', {}, currentLang)}</td>`;
       customDomainsTbody.appendChild(tr);
       return;
     }
@@ -242,14 +262,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       tdDomain.innerHTML = `<strong>${escapeHtml(domain)}</strong>`;
 
       const tdDate = document.createElement('td');
-      tdDate.textContent = item.addedAt ? new Date(item.addedAt).toLocaleDateString('vi-VN') : 'Mới';
+      const locale = currentLang === 'vi' ? 'vi-VN' : 'en-US';
+      tdDate.textContent = item.addedAt ? new Date(item.addedAt).toLocaleDateString(locale) : 'New';
 
       const tdAction = document.createElement('td');
       const btnDel = document.createElement('button');
       btnDel.className = 'btn-del';
-      btnDel.textContent = '🗑️ Xóa';
+      btnDel.textContent = t('btn_delete', {}, currentLang);
       btnDel.addEventListener('click', async () => {
-        if (confirm(`Xác nhận xóa "${domain}" khỏi database tùy chỉnh?`)) {
+        if (confirm(t('confirm_delete_domain', { domain }, currentLang))) {
           chrome.runtime.sendMessage({ action: 'removeDomain', domain }, () => {
             delete customDomains[domain];
             renderCustomDomains();
@@ -285,7 +306,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (!clean.includes('.')) {
-      alert('Vui lòng nhập tên miền hợp lệ (ví dụ: sharefile.net)!');
+      alert(t('alert_invalid_domain', {}, currentLang));
       return;
     }
 
@@ -295,14 +316,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         inputNewDomain.value = '';
         renderCustomDomains();
         updateStats();
-        alert(`Đã thêm ${clean} vào Database thành công!`);
+        alert(t('alert_domain_added', { domain: clean }, currentLang));
       }
     });
   });
 
-  // --- 6. Save Settings ---
+  // --- 6. Live Language Switcher ---
+  if (settingLang) {
+    settingLang.addEventListener('change', () => {
+      currentLang = settingLang.value || DEFAULT_LANG;
+      applyI18n(currentLang);
+      renderSearchResults(lastSearchResults || initialList);
+      renderCustomDomains();
+      checkConnection();
+    });
+  }
+
+  // --- 7. Save Settings ---
   btnSaveSettings.addEventListener('click', () => {
     const newSettings = {
+      language: settingLang ? settingLang.value : currentLang,
       jdPort: parseInt(settingPort.value, 10) || 9666,
       defaultPackageTemplate: settingTemplate.value.trim() || 'WebGrab_{domain}',
       autoGrabEnabled: settingAutograb.checked,
@@ -313,6 +346,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     chrome.runtime.sendMessage({ action: 'saveSettings', settings: newSettings }, (res) => {
       if (res && res.success) {
+        currentLang = newSettings.language;
+        applyI18n(currentLang);
         saveSettingsMsg.classList.remove('hidden');
         setTimeout(() => {
           saveSettingsMsg.classList.add('hidden');
