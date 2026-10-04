@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const settingIntercept = document.getElementById('setting-intercept');
   const settingFallback = document.getElementById('setting-fallback');
   const settingNotify = document.getElementById('setting-notify');
+  const settingVideobtn = document.getElementById('setting-videobtn');
   const btnSaveSettings = document.getElementById('btn-save-settings');
   const saveSettingsMsg = document.getElementById('save-settings-msg');
 
@@ -113,6 +114,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   settingIntercept.checked = currentSettings.interceptDownloads !== false;
   settingFallback.checked = currentSettings.fallbackIfJdOffline !== false;
   settingNotify.checked = currentSettings.notifyOnGrab !== false;
+  if (settingVideobtn) settingVideobtn.checked = currentSettings.showVideoOverlayButton !== false;
 
   // Compute and show stats
   function updateStats() {
@@ -341,7 +343,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       autoGrabEnabled: settingAutograb.checked,
       interceptDownloads: settingIntercept.checked,
       fallbackIfJdOffline: settingFallback.checked,
-      notifyOnGrab: settingNotify.checked
+      notifyOnGrab: settingNotify.checked,
+      showVideoOverlayButton: settingVideobtn ? settingVideobtn.checked : true
     };
 
     chrome.runtime.sendMessage({ action: 'saveSettings', settings: newSettings }, (res) => {

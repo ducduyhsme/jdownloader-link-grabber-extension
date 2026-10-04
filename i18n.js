@@ -81,6 +81,8 @@ export const MESSAGES = {
     setting_fallback_desc: 'Allow Chrome to download normally if JDownloader 2 is not running',
     setting_notify_label: 'Desktop Notifications',
     setting_notify_desc: 'Show desktop notifications when links or downloads are captured',
+    setting_video_btn_label: 'Video Download Button',
+    setting_video_btn_desc: 'Show "Download with JD2" overlay button at the top-right of video players',
     btn_save_settings: 'Save Settings',
     msg_settings_saved: 'Settings saved successfully!',
 
@@ -195,6 +197,8 @@ export const MESSAGES = {
     setting_fallback_desc: 'Cho phép Chrome tiếp tục tải bình thường nếu JDownloader 2 đang tắt',
     setting_notify_label: 'Hiển thị thông báo',
     setting_notify_desc: 'Bật thông báo trên màn hình mỗi khi bắt link hoặc chuyển file thành công',
+    setting_video_btn_label: 'Nút tải trên video (Video Button)',
+    setting_video_btn_desc: 'Hiển thị nút "Tải với JD2" ở góc trên bên phải khung phát video',
     btn_save_settings: 'Lưu cài đặt',
     msg_settings_saved: 'Đã lưu cài đặt thành công!',
 

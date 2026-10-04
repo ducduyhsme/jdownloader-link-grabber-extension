@@ -18,6 +18,7 @@ let settings = {
   interceptDownloads: true, // Intercept browser downloads and route to JD2
   fallbackIfJdOffline: true, // Allow browser to download if JD2 is not running
   notifyOnGrab: true,
+  showVideoOverlayButton: true, // Show "Download with JD2" button on video players
   defaultPackageTemplate: 'WebGrab_{domain}',
   jdPort: 9666
 };

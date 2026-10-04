@@ -7,6 +7,7 @@
 
 (function () {
   let userLang = 'en';
+  let showVideoBtn = true;
 
   const I18N = {
     en: {
@@ -32,18 +33,39 @@
     return dict[key] || I18N.en[key] || key;
   }
 
-  // Fetch initial language setting
+  // Fetch initial language and video button settings
   chrome.storage.local.get(['settings'], (res) => {
-    if (res && res.settings && res.settings.language) {
-      userLang = res.settings.language;
+    if (res && res.settings) {
+      if (res.settings.language) {
+        userLang = res.settings.language;
+      }
+      if (typeof res.settings.showVideoOverlayButton === 'boolean') {
+        showVideoBtn = res.settings.showVideoOverlayButton;
+      }
+      if (!showVideoBtn) {
+        removeAllVideoButtons();
+      } else {
+        scanAndInject();
+      }
     }
   });
 
-  // Watch for language changes
+  // Watch for settings changes
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === 'local' && changes.settings && changes.settings.newValue) {
-      userLang = changes.settings.newValue.language || 'en';
+      const newSettings = changes.settings.newValue;
+      userLang = newSettings.language || 'en';
       updateButtonLabels();
+
+      if (typeof newSettings.showVideoOverlayButton === 'boolean') {
+        const prevShow = showVideoBtn;
+        showVideoBtn = newSettings.showVideoOverlayButton;
+        if (!showVideoBtn) {
+          removeAllVideoButtons();
+        } else if (!prevShow) {
+          scanAndInject();
+        }
+      }
     }
   });
 
@@ -361,10 +383,21 @@
   }
 
   /**
+   * Remove all injected video download buttons if disabled in settings.
+   */
+  function removeAllVideoButtons() {
+    document.querySelectorAll('.jd-video-overlay-btn').forEach(btn => {
+      if (btn.parentNode) {
+        btn.parentNode.removeChild(btn);
+      }
+    });
+  }
+
+  /**
    * Scan and inject buttons based on domain.
    */
   function scanAndInject() {
-    if (!isVideoSite) return;
+    if (!isVideoSite || !showVideoBtn) return;
 
     if (isYouTube()) {
       injectYouTube();

@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const toggleAutograb = document.getElementById('toggle-autograb');
   const toggleIntercept = document.getElementById('toggle-intercept');
   const toggleNotify = document.getElementById('toggle-notify');
+  const toggleVideobtn = document.getElementById('toggle-videobtn');
   const totalDomainsEl = document.getElementById('total-domains');
   const btnOpenOptions = document.getElementById('btn-open-options');
 
@@ -43,6 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       toggleAutograb.checked = !!response.settings.autoGrabEnabled;
       toggleIntercept.checked = response.settings.interceptDownloads !== false;
       toggleNotify.checked = !!response.settings.notifyOnGrab;
+      if (toggleVideobtn) toggleVideobtn.checked = response.settings.showVideoOverlayButton !== false;
       refreshStatus();
     }
   });
@@ -224,6 +226,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       settings: { notifyOnGrab: toggleNotify.checked }
     });
   });
+
+  if (toggleVideobtn) {
+    toggleVideobtn.addEventListener('change', () => {
+      chrome.runtime.sendMessage({
+        action: 'saveSettings',
+        settings: { showVideoOverlayButton: toggleVideobtn.checked }
+      });
+    });
+  }
 
   // 7. Open Options Page
   btnOpenOptions.addEventListener('click', () => {
